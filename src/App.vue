@@ -2,28 +2,28 @@
   <div id="app">
     <header>
       <nav>
-        <ul>
-          <li @click="switchView('todos')">Todos</li>
-          <li @click="switchView('posts')">Post</li>
+        <ul style="display: flex;">
+          <li :class="{ 'active-todos': currentView === 'todos' }" @click="switchView('todos')">Todos</li>
+          <li :class="{ 'active-posts': currentView === 'posts' }" @click="switchView('posts')">Post</li>
         </ul>
       </nav>
     </header>
 
     <div class="container">
-      <div v-if="currentView === 'todos'">
-        <h2>Todos</h2>
-        <form @submit.prevent="addTodo">
-          <input type="text" v-model="newTodo" placeholder="Tambah kegiatan baru" required>
-          <button type="submit">Tambah</button>
-        </form>
-        <div v-for="(todo, index) in filteredTodos" :key="index">
-          <!-- Menggunakan @click untuk updateTodo -->
-          <input type="checkbox" v-model="todo.completed" @click="updateTodo(index)">
-          <span :class="{ 'completed': todo.completed }">{{ todo.text }}</span>
-          <button @click="removeTodo(index)">Remove</button>
-        </div>
-        <!-- Tombol filter untuk menampilkan hanya kegiatan yang belum selesai -->
-        <button @click="filterTodos">{{ showCompleted ? 'Tampilkan Semua' : 'Filter Belum Selesai' }}</button>
+    <div v-if="currentView === 'todos'">
+      <h2>Todos</h2>
+      <form @submit.prevent="addTodo">
+        <input type="text" v-model="newTodo" placeholder="Tambah kegiatan baru" required>
+        <button @click="confirmAction('Add', index)" type="submit">Tambah</button>
+      </form>
+      <div v-for="(todo, index) in filteredTodos" :key="index">
+        <!-- Menggunakan @click untuk updateTodo -->
+        <input type="checkbox" v-model="todo.completed" @click="updateTodo(index)">
+        <span :class="{ 'completed': todo.completed }">{{ todo.text }}</span>
+        <button @click="confirmAction('Remove', index)">Remove</button>
+      </div>
+      <!-- Tombol filter untuk menampilkan hanya kegiatan yang belum selesai -->
+      <button @click="filterTodos">{{ showCompleted ? 'Filter Belum Selesai' : 'Tampilkan Semua' }}</button>
       </div>
       <!-- Bagian lain dari aplikasi -->
       <div v-else-if="currentView === 'posts'">
@@ -36,7 +36,7 @@
         <div v-else>
           <div v-for="post in posts" :key="post.id">
             <h3>{{ post.title }}</h3>
-            <p>{{ post.body }}</p>
+            <p class="center-text">{{ post.body }}</p>
           </div>
         </div>
       </div>
@@ -110,6 +110,37 @@ export default {
         this.loading = false;
       }
     },
+
+    confirmAction(action, index = null) {
+      let message = '';
+      switch (action) {
+        case 'Remove':
+          message = `Apakah Anda yakin ingin menghapus kegiatan ini?`;
+          break;
+        case 'Add':
+          message = `Apakah Anda yakin ingin menambah kegiatan ini?`;
+          break;
+        default:
+          break;
+      }
+
+      if (window.confirm(message)) {
+        switch (action) {
+          case 'Update':
+            this.updateTodo(index);
+            break;
+          case 'Remove':
+            this.removeTodo(index);
+            break;
+          case 'Filter':
+            this.filterTodos();
+            break;
+          default:
+            break;
+        }
+      }
+    },
+
     async fetchPosts() {
       this.loading = true;
       try {
@@ -152,4 +183,12 @@ nav ul li:hover {
 .completed {
   text-decoration: line-through;
 }
+
+.active-todos {
+  background-color: rgb(95, 95, 95); /* Warna latar belakang untuk Todos saat aktif */
+}
+.active-posts {
+  background-color: rgb(95, 95, 95); /* Warna latar belakang untuk Post saat aktif */
+}
+
 </style>
